@@ -1,0 +1,15 @@
+clear all; close all; clc;
+
+data = load('AH1024_datastruct.mat');
+
+
+
+% session = 1;
+% 
+% plot(data.summary(1).wholeFOVrigid-3000); hold on;
+% plot(data.summary(1).c2FOVrigid-3000);
+% nTrialStart = length(data.summary(1).trialStart);
+% nWaterTime = length(data.summary(1).waterTime);
+% 
+% figure;
+% scatter(data.summary(1).wholeFOVrigid-3000, data.summary(1).c2FOVrigid-3000);
