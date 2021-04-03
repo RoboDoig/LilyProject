@@ -27,8 +27,18 @@ figure;
 imagesc(trialAligned(30:end, :));
 
 % parse trialMatrix (hit, miss, fa, cr)
-trialOutcome = nan(1, nTrials);
-for i = 1:nTrials
-    trialOutcome(i) = find(trialMatrix(i, :)==1);
-end
+trialOutcome = parseTrialMatrix(trialMatrix);
+
+% cut out initial trials
+trialAligned = trialAligned(30:end, :);
+trialOutcome = trialOutcome(30:end);
+
+% show responses for each trial type;
+figure;
+subplot(2,2,1); imagesc(trialAligned(trialOutcome==1, :)); title('HIT');
+subplot(2,2,2); imagesc(trialAligned(trialOutcome==2, :)); title('MISS');
+subplot(2,2,3); imagesc(trialAligned(trialOutcome==4, :)); title('CR');
+subplot(2,2,4); imagesc(trialAligned(trialOutcome==3, :)); title('FA');
+
+
 

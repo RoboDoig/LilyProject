@@ -26,9 +26,9 @@ trialAligned = splitToTrials(dff', trialStart, trialEnd);
 figure;
 imagesc(trialAligned(30:end, :));
 
-% parse trialMatrix
-trialOutcome = nan(1, nTrials)
-for i = 1:nTrials
-    
-end
+% parse trialMatrix (hit, miss, fa, cr)
+trialOutcome = parseTrialMatrix(trialMatrix);
+
+figure;
+image
 
