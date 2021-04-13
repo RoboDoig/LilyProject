@@ -3,6 +3,7 @@ clear all; close all; clc;
 data = load('AH1024_datastruct.mat');
 data = data.summary;
 fs = 15.44;
+trialSkip = 30;
 
 % find highest performance trial
 correctRate = [data.CorrectRate];
@@ -11,12 +12,12 @@ session = maxIdx;
 
 % for that session get useful variables
 dff = dffFromTrace(data(session).c2FOVrigid);
-trialStart = data(session).trialStart;
-trialEnd = data(session).trialEnd;
+trialStart = data(session).trialStart(trialSkip:end);
+trialEnd = data(session).trialEnd(trialSkip:end);
 nTrials = length(trialStart);
-trialMatrix = data(session).trialMatrix;
-lickTimes = data(session).licks;
-waterTime = data(session).waterTime;
+trialMatrix = data(session).trialMatrix(trialSkip:end, :);
+lickTimes = data(session).licks(trialSkip:end, :);
+waterTime = data(session).waterTime(trialSkip: end);
 
 figure; hold on;
 plot(dff, 'k');
@@ -28,31 +29,47 @@ trialAligned = splitToTrials(dff', trialStart, trialEnd);
 % parse trialMatrix (hit, miss, fa, cr)
 trialOutcome = parseTrialMatrix(trialMatrix);
 
+% plot all trials with variable timings
 figure;
 imagesc(trialAligned(30:end, 1:100))
 
+% show responses for each trial type
+hitTrials = trialAligned(trialOutcome==1, :);
+missTrials = trialAligned(trialOutcome==2, :);
+crTrials = trialAligned(trialOutcome==4, :);
+faTrials = trialAligned(trialOutcome==3, :);
+
+figure;
+subplot(2,2,1); imagesc(hitTrials); title('HIT');
+subplot(2,2,2); imagesc(missTrials); title('MISS');
+subplot(2,2,3); imagesc(crTrials); title('CR');
+subplot(2,2,4); imagesc(faTrials); title('FA');
+
+figure; hold on;
+shadedErrorBar(1:size(hitTrials, 2), nanmean(hitTrials), nanstd(hitTrials), 'lineprops', 'g', 'transparent', 1);
+shadedErrorBar(1:size(missTrials, 2), nanmean(missTrials), nanstd(missTrials), 'lineprops', 'm', 'transparent', 1);
+shadedErrorBar(1:size(crTrials, 2), nanmean(crTrials), nanstd(crTrials), 'lineprops', 'b', 'transparent', 1);
+shadedErrorBar(1:size(faTrials, 2), nanmean(faTrials), nanstd(faTrials), 'lineprops', 'r', 'transparent', 1);
+
+%% GLM
 % creat GLM Matrix
-nFrames = 100;
-startTrial = 30;
-nVars = 2;
-
-% glm input - nobs x nvars (trials x vars)
-% glm output - nobs
-
-trialOutcome = trialOutcome(startTrial:end)';
-nLicks = cellfun(@length, lickTimes); nLicks = nLicks(startTrial:end);
-X = [trialOutcome nLicks];
-
-meanResponse = nanmean(trialAligned(startTrial:end, 1:nFrames), 2);
-y = meanResponse;
-
-fit = glmnet(X, y);
-
-% % cut out initial trials
-% trialAligned = trialAligned(30:end, :);
-% trialOutcome = trialOutcome(30:end);
-% lickTimes = lickTimes(30:end);
+% nFrames = 100;
+% startTrial = 30;
 % 
+% % glm input - nobs x nvars (trials x vars)
+% % glm output - nobs
+% trialOutcome = trialOutcome(startTrial:end)';
+% trialOneHot = trialMatrix(startTrial:end, :);
+% lickTimes = lickTimes(startTrial:end, :);
+% nLicks = cellfun(@length, lickTimes);
+% X = [trialOutcome nLicks];
+% 
+% meanResponse = nanmean(trialAligned(startTrial:end, 1:nFrames), 2);
+% y = meanResponse;
+% 
+% fit = glmnet(X, y);
+% glmnetPrint(fit);
+ 
 % % show licks + response
 % figure; hold on;
 % imagesc(trialAligned);
