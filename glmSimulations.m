@@ -14,7 +14,7 @@ figure;
 plot(tVec, lickVec);
 
 %% define response kernel
-kernelLength = 0.1;
+kernelLength = 0.4;
 kernel = sin(linspace(pi/2, pi, kernelLength*fs));
 
 figure;
@@ -28,11 +28,6 @@ plot(filtResponse, 'k');
 plot(lickVec, 'b');
 
 %% GLM
-%% sanity check
-% x = (1:1000)';
-% y = x*2;
-% fit = glmnet(x, y);
-% glmnetPrint(fit);
 
 %% predict trace from lick
 d = 0.5 * fs; % window size
@@ -56,7 +51,7 @@ glmnetPrint(fit);
 yHat = glmnetPredict(fit, designMatrix);
 
 figure; hold on;
-plot(yHat(:, end), 'r');
+plot(yHat(:, end), 'r', 'LineWidth', 2);
 plot(y(d+1:end), 'k');
 
 figure; hold on;
