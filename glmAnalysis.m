@@ -1,80 +1,41 @@
 clear all; close all; clc;
 
-%% load animal data
+%% params
 data = load('AH1024_datastruct.mat');
-data = data.summary;
+sessionIdx = 7;
 fs = 15.44;
 trialSkip = 30;
 
 %% extract session variables
-session = 5;
-dff = dffFromTrace(data(session).c2FOVrigid);
-tAxis = (1:length(dff))./fs;
-trialStart = data(session).trialStart(trialSkip:end)./fs;
-trialEnd = data(session).trialEnd(trialSkip:end)./fs;
-nTrials = length(trialStart);
-trialMatrix = data(session).trialMatrix(trialSkip:end, :);
-lickTimesRelative = data(session).licks(trialSkip:end, :);
-waterTime = data(session).waterTime(trialSkip: end);
-skipStartFrame = floor(trialStart(1)*fs);
-
-% get absolute lick times
-lickTimes = [];
-for i = 1:length(trialStart)
-    thisTrialLicks = lickTimesRelative{i}';
-    lickTimes = [lickTimes, thisTrialLicks+trialStart(i)];
-end
-
-% vectorize lick times
-lickTimesVec = zeros(1, length(dff));
-for i = 1:length(lickTimes)
-    vecPoint = find(tAxis>=lickTimes(i), 1);
-    lickTimesVec(vecPoint) = 1;
-end
-
-% plot timings
-figure; hold on;
-plot(tAxis, dff, 'k');
-plot(tAxis, lickTimesVec, 'b');
-plot([tAxis(skipStartFrame) tAxis(skipStartFrame)], [0, 1], 'g--')
-scatter(trialStart, ones(1,length(trialStart)), 'r.');
-scatter(lickTimes, ones(1,length(lickTimes)), 'b.');
+sessionStruct = extractSessionInformation(data.summary, sessionIdx, fs, trialSkip, 1);
 
 %% GLM
-d = floor(20 * fs); % window size for design matrix
+inputVectors = [sessionStruct.lickTimesVec; sessionStruct.poleOnsetVec; sessionStruct.alignInfoX'; sessionStruct.alignInfoY'];
+windowSizes = [floor(20 * fs); floor(10 * fs); floor(10 * fs); floor(10 * fs)]; % window sizes for design matrix
 
-y = dff;
+responseVector = sessionStruct.dff; % response vector;
+startFrame = sessionStruct.skipStartFrame;
+endFrame = length(responseVector);
 
-% designMatrix
-designMatrix = nan(length(skipStartFrame:length(y)), d);
-c = 1;
-for i = skipStartFrame:length(y)
-    lickWindow = lickTimesVec((i-d+1):i);
-    designMatrix(c, :) = lickWindow;
-    
-    c = c+1;
-end
+[fit, fullDesignMatrix, y, yHat] = buildGLM(inputVectors, windowSizes, responseVector, startFrame, endFrame, 1);
 
-figure;
-imagesc(designMatrix(1:1000, :));
-
-fit = glmnet(designMatrix, y(skipStartFrame:end));
-glmnetPrint(fit);
-yHat = glmnetPredict(fit, designMatrix);
-
-trueY = y(skipStartFrame:end);
+%% GLM - Plot
+trueY = y(startFrame:endFrame);
 yHat = yHat(:, end);
-lickVec = lickTimesVec(skipStartFrame:end);
-t = tAxis(skipStartFrame:end);
+lickVec = sessionStruct.lickTimesVec(startFrame:endFrame);
+t = sessionStruct.tAxis(startFrame:endFrame);
 
+% plot true and predicted
 figure; hold on;
 plot(t, trueY, 'k');
 plot(t, yHat, 'r');
+% plot(t, -lickVec, 'b');
 
-figure; hold on;
-scatter(yHat(:, end), y(skipStartFrame:end), 'k.');
-[h, p] = corrcoef(yHat(:, end), y(skipStartFrame:end));
-title(['R^2 = ', num2str(h(1,2)), ' p = ', num2str(p(1,2))])
-
-figure; hold on;
-plot(flipud(fit.beta(:, end)), 'r');
+% plot RFs for each input
+cT = [0 cumsum(windowSizes)'];
+figure;
+for i = 1:size(inputVectors, 1)
+   subplot(1, size(inputVectors, 1), i);
+   rf = flipud(fit.beta((cT(i)+1):cT(i+1), end));
+   plot((1:length(rf))./fs, rf, 'k');
+end
