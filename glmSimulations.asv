@@ -1,0 +1,66 @@
+clear all; close all; clc;
+
+%% params
+fs = 1000;
+dt = 1/fs;
+vecLength = 100 * fs;
+fr = 3;
+
+%% generate random lick pattern
+lickVec = double(rand(1, vecLength) < fr*dt);
+tVec = (1:vecLength).*dt;
+
+figure;
+plot(tVec, lickVec);
+
+%% define response kernel
+kernelLength = 0.1;
+kernel = sin(linspace(pi/2, pi, kernelLength*fs));
+
+figure;
+plot(kernel);
+
+%% filter signal with kernel
+filtResponse = filter(kernel, 1, lickVec) + (randn(1, length(lickVec))*0.1);
+
+figure; hold on;
+plot(filtResponse, 'k');
+plot(lickVec, 'b');
+
+%% GLM
+%% sanity check
+% x = (1:1000)';
+% y = x*2;
+% fit = glmnet(x, y);
+% glmnetPrint(fit);
+
+%% predict trace from lick
+d = 0.5 * fs; % window size
+
+y = filtResponse';
+
+% designMatrix
+designMatrix = [];
+figure;
+for i = d:length(y)
+    lickWindow = lickVec((i-d+1):i);
+    responseWindow = y((i-))
+    plot(lickWindow);
+end
+
+% % design matrix
+% designMatrix = nan(length(filtResponse), d);
+% paddedLicks = [nan(1, d-1) lickVec];
+% for i = 1:length(filtResponse)
+%    designMatrix(i,:) = paddedLicks(i:(i+d-1)); 
+% end
+% 
+% figure;
+% imagesc(designMatrix)
+% fit = glmnet(designMatrix, y, 'gaussian');
+% glmnetPrint(fit);
+% 
+% yHat = glmnetPredict(fit, designMatrix);
+% figure; hold on;
+% plot(yHat(:, end), 'r');
+% plot(y, 'k');
