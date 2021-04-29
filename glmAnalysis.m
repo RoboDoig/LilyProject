@@ -1,10 +1,11 @@
 clear all; close all; clc;
 
 %% params
-% data = load('AH1024_datastruct.mat');
+data = load('AH1024_datastruct.mat');
 % data = load('AH1100_datastruct.mat');
-data = load('AH1107_datastruct.mat');
-sessionIdx = 3;
+% data = load('AH1107_datastruct.mat');
+nSessions = size(data.summary, 2);
+sessionIdx = 5;
 fs = 15.44;
 trialSkip = 30;
 
@@ -19,10 +20,10 @@ inputVectors = [sessionStruct.lickTimesVec;...
                 sessionStruct.alignInfoY'];
             
 windowSizes = [floor(20 * fs);...
-               floor(10 * fs);...
-               floor(10 * fs);...
-               floor(10 * fs);...
-               floor(10 * fs)]; % window sizes for design matrix
+               floor(2 * fs);...
+               floor(2 * fs);...
+               floor(1 * fs);...
+               floor(1 * fs)]; % window sizes for design matrix
 
 responseVector = sessionStruct.dff; % response vector;
 startFrame = sessionStruct.skipStartFrame;
@@ -30,11 +31,12 @@ endFrame = length(responseVector);
 
 [fit, fullDesignMatrix, y, yHat] = buildGLM(inputVectors, windowSizes, responseVector, startFrame, endFrame, 1);
 
-%% GLM - Plot
 trueY = y(startFrame:endFrame);
 yHat = yHat(:, end);
 lickVec = sessionStruct.lickTimesVec(startFrame:endFrame);
 t = sessionStruct.tAxis(startFrame:endFrame);
+
+%% GLM - Plot
 
 % plot true and predicted
 figure; hold on;

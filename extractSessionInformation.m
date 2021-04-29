@@ -70,6 +70,8 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     sessionStruct.poleOnsetVec = poleOnsetVec;
     sessionStruct.poleDownVec = poleDownVec;
     
+    sessionStruct.correctRate = data(sessionIdx).CorrectRate;
+    
     if verbose
         % plot timings
         figure; hold on;
