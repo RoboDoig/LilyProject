@@ -1,8 +1,10 @@
 clear all; close all; clc;
 
 %% params
-data = load('AH1024_datastruct.mat');
-sessionIdx = 7;
+% data = load('AH1024_datastruct.mat');
+% data = load('AH1100_datastruct.mat');
+data = load('AH1107_datastruct.mat');
+sessionIdx = 3;
 fs = 15.44;
 trialSkip = 30;
 
@@ -10,8 +12,17 @@ trialSkip = 30;
 sessionStruct = extractSessionInformation(data.summary, sessionIdx, fs, trialSkip, 1);
 
 %% GLM
-inputVectors = [sessionStruct.lickTimesVec; sessionStruct.poleOnsetVec; sessionStruct.alignInfoX'; sessionStruct.alignInfoY'];
-windowSizes = [floor(20 * fs); floor(10 * fs); floor(10 * fs); floor(10 * fs)]; % window sizes for design matrix
+inputVectors = [sessionStruct.lickTimesVec;...
+                sessionStruct.poleOnsetVec;...
+                sessionStruct.poleDownVec;...
+                sessionStruct.alignInfoX';...
+                sessionStruct.alignInfoY'];
+            
+windowSizes = [floor(20 * fs);...
+               floor(10 * fs);...
+               floor(10 * fs);...
+               floor(10 * fs);...
+               floor(10 * fs)]; % window sizes for design matrix
 
 responseVector = sessionStruct.dff; % response vector;
 startFrame = sessionStruct.skipStartFrame;
@@ -38,4 +49,5 @@ for i = 1:size(inputVectors, 1)
    subplot(1, size(inputVectors, 1), i);
    rf = flipud(fit.beta((cT(i)+1):cT(i+1), end));
    plot((1:length(rf))./fs, rf, 'k');
+   xlabel('Time (s)'); ylabel('coeff');
 end
