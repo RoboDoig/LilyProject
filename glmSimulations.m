@@ -4,7 +4,7 @@ clear all; close all; clc;
 fs = 1000;
 dt = 1/fs;
 vecLength = 100 * fs;
-fr = 5;
+fr = 1;
 
 %% generate random lick pattern
 lickVec = double(rand(1, vecLength) < fr*dt);

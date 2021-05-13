@@ -1,5 +1,6 @@
 function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSizes)
-
+    
+    nSessions = size(data.summary, 2);
     % fit models for each session
     allSessions = cell(1, nSessions);
     for sessionIdx = 1:nSessions
