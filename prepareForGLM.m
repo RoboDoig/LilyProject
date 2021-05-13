@@ -8,7 +8,8 @@ trialSkip = 30;
 % find highest performance trial
 correctRate = [data.CorrectRate];
 [m, maxIdx] = max(correctRate);
-session = maxIdx;
+% session = maxIdx;
+session = 5;
 
 % for that session get useful variables
 dff = dffFromTrace(data(session).c2FOVrigid);
@@ -46,10 +47,10 @@ subplot(2,2,3); imagesc(crTrials); title('CR');
 subplot(2,2,4); imagesc(faTrials); title('FA');
 
 figure; hold on;
-shadedErrorBar(1:size(hitTrials, 2), nanmean(hitTrials), nanstd(hitTrials), 'lineprops', 'g', 'transparent', 1);
-shadedErrorBar(1:size(missTrials, 2), nanmean(missTrials), nanstd(missTrials), 'lineprops', 'm', 'transparent', 1);
-shadedErrorBar(1:size(crTrials, 2), nanmean(crTrials), nanstd(crTrials), 'lineprops', 'b', 'transparent', 1);
-shadedErrorBar(1:size(faTrials, 2), nanmean(faTrials), nanstd(faTrials), 'lineprops', 'r', 'transparent', 1);
+shadedErrorBar(1:size(hitTrials, 2), nanmean(hitTrials), nansem(hitTrials), 'lineprops', 'g', 'transparent', 1);
+shadedErrorBar(1:size(missTrials, 2), nanmean(missTrials), nansem(missTrials), 'lineprops', 'm', 'transparent', 1);
+shadedErrorBar(1:size(crTrials, 2), nanmean(crTrials), nansem(crTrials), 'lineprops', 'b', 'transparent', 1);
+shadedErrorBar(1:size(faTrials, 2), nanmean(faTrials), nansem(faTrials), 'lineprops', 'r', 'transparent', 1);
 
 %% GLM
 % creat GLM Matrix
