@@ -1,6 +1,7 @@
 clear all; close all; clc;
 
 data = load('AH1024_datastruct.mat');
+% data = load('AH1107_datastruct.mat');
 data = data.summary;
 fs = 15.44;
 trialSkip = 30;
@@ -9,7 +10,7 @@ trialSkip = 30;
 correctRate = [data.CorrectRate];
 [m, maxIdx] = max(correctRate);
 % session = maxIdx;
-session = 5;
+session = 7;
 
 % for that session get useful variables
 dff = dffFromTrace(data(session).c2FOVrigid);
@@ -47,10 +48,10 @@ subplot(2,2,3); imagesc(crTrials); title('CR');
 subplot(2,2,4); imagesc(faTrials); title('FA');
 
 figure; hold on;
-shadedErrorBar(1:size(hitTrials, 2), nanmean(hitTrials), nansem(hitTrials), 'lineprops', 'g', 'transparent', 1);
-shadedErrorBar(1:size(missTrials, 2), nanmean(missTrials), nansem(missTrials), 'lineprops', 'm', 'transparent', 1);
-shadedErrorBar(1:size(crTrials, 2), nanmean(crTrials), nansem(crTrials), 'lineprops', 'b', 'transparent', 1);
-shadedErrorBar(1:size(faTrials, 2), nanmean(faTrials), nansem(faTrials), 'lineprops', 'r', 'transparent', 1);
+shadedErrorBar(1:size(hitTrials, 2), nanmean(hitTrials), nansem(hitTrials), 'lineprops', 'b', 'transparent', 1);
+shadedErrorBar(1:size(missTrials, 2), nanmean(missTrials), nansem(missTrials), 'lineprops', 'k', 'transparent', 1);
+shadedErrorBar(1:size(crTrials, 2), nanmean(crTrials), nansem(crTrials), 'lineprops', 'r', 'transparent', 1);
+shadedErrorBar(1:size(faTrials, 2), nanmean(faTrials), nansem(faTrials), 'lineprops', 'g', 'transparent', 1);
 
 %% GLM
 % creat GLM Matrix

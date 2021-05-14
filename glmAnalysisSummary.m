@@ -1,11 +1,11 @@
 clear all; close all; clc;
 
 %% params
-fname = 'AH1024_datastruct';
+% fname = 'AH1024_datastruct';
 % fname = 'AH1100_datastruct';
 % fname = 'AH1107_datastruct';
 % fname = 'AH1147_datastruct';
-% fname = 'AH1149_datastruct';
+fname = 'AH1149_datastruct';
 
 % % fname = 'AH1110_datastruct';
 % % fname = 'AH1148_datastruct';
@@ -63,30 +63,52 @@ for j = 1:nInputs
 end
 
 %% trace subtraction, alignment
-fullTraceLength = length(allSessions{I}.sessionStruct.dff);
-subTrace = [nan(fullTraceLength - length(allSessions{I}.trueY), 1); allSessions{I}.trueY - allSessions{I}.yHat]';
+windowCutoff = floor(6*fs);
+trueTrials = cell(1, 4);
+subTrials = cell(1, 4);
+for i = 1:nSessions
+   
+    fullTraceLength = length(allSessions{i}.sessionStruct.dff);
+    trueTrace = [nan(fullTraceLength - length(allSessions{i}.trueY), 1); allSessions{i}.trueY]';
+    subTrace = [nan(fullTraceLength - length(allSessions{i}.trueY), 1); allSessions{i}.trueY - allSessions{i}.yHat]';
+    
+    trueAligned = splitToTrials(trueTrace, floor(allSessions{i}.sessionStruct.trialStart.*fs), floor(allSessions{i}.sessionStruct.trialEnd.*fs));
+    subAligned = splitToTrials(subTrace, floor(allSessions{i}.sessionStruct.trialStart.*fs), floor(allSessions{i}.sessionStruct.trialEnd.*fs));
+    
+    trialOutcome = parseTrialMatrix(allSessions{i}.sessionStruct.trialMatrix);
+    hitIndex = find(trialOutcome==1);
+    missIndex = find(trialOutcome==2);
+    faIndex = find(trialOutcome==3);
+    crIndex = find(trialOutcome==4);
+    
+    if length(missIndex) > 2 && length(faIndex) > 2
+        trueHit = trueAligned(hitIndex, 1:windowCutoff); trueTrials{1, 1} = [trueTrials{1, 1}; nanmean(trueHit)];
+        trueMiss = trueAligned(missIndex, 1:windowCutoff); trueTrials{1, 2} = [trueTrials{1, 2}; nanmean(trueMiss)];
+        trueFA = trueAligned(faIndex, 1:windowCutoff); trueTrials{1, 3} = [trueTrials{1, 3}; nanmean(trueFA)];
+        trueCR = trueAligned(crIndex, 1:windowCutoff); trueTrials{1, 4} = [trueTrials{1, 4}; nanmean(trueCR)];
 
-trialAligned = splitToTrials(subTrace, allSessions{I}.sessionStruct.trialStart.*fs, allSessions{I}.sessionStruct.trialEnd.*fs);
-
-trialOutcome = parseTrialMatrix(allSessions{I}.sessionStruct.trialMatrix);
-
-% show responses for each trial type
-hitTrials = trialAligned(trialOutcome==1, :);
-missTrials = trialAligned(trialOutcome==2, :);
-if size(missTrials, 1) < 2
-   missTrials = [missTrials; missTrials]; 
+        subHit = subAligned(hitIndex, 1:windowCutoff); subTrials{1, 1} = [subTrials{1, 1}; nanmean(subHit)];
+        subMiss = subAligned(missIndex, 1:windowCutoff); subTrials{1, 2} = [subTrials{1, 2}; nanmean(subMiss)];
+        subFA = subAligned(faIndex, 1:windowCutoff); subTrials{1, 3} = [subTrials{1, 3}; nanmean(subFA)];
+        subCR = subAligned(crIndex, 1:windowCutoff); subTrials{1, 4} = [subTrials{1, 4}; nanmean(subCR)];
+    end
 end
-crTrials = trialAligned(trialOutcome==4, :);
-if size(crTrials, 1) < 2
-   crTrials = [crTrials; crTrials]; 
-end
-faTrials = trialAligned(trialOutcome==3, :);
 
-figure; hold on;
-shadedErrorBar((1:size(hitTrials, 2))./fs, nanmean(hitTrials), nansem(hitTrials), 'lineprops', 'g', 'transparent', 1);
-shadedErrorBar((1:size(crTrials, 2))./fs, nanmean(crTrials), nansem(crTrials), 'lineprops', 'b', 'transparent', 1);
-shadedErrorBar((1:size(faTrials, 2))./fs, nanmean(faTrials), nansem(faTrials), 'lineprops', 'r', 'transparent', 1);
-shadedErrorBar((1:size(missTrials, 2))./fs, nanmean(missTrials), nansem(missTrials), 'lineprops', 'm', 'transparent', 1);
+%% plotting
+figure('Renderer', 'painters', 'Position', [10 10 600 250]);
+subplot(1,2,1); hold on;
+shadedErrorBar((1:size(trueTrials{1, 1}, 2))./fs, nanmean(trueTrials{1, 1})-nanmean(trueTrials{1, 1}(:,1)), nansem(trueTrials{1, 1}), 'lineprops', 'b', 'transparent', 1);
+shadedErrorBar((1:size(trueTrials{1, 2}, 2))./fs, nanmean(trueTrials{1, 2})-nanmean(trueTrials{1, 2}(:,1)), nansem(trueTrials{1, 2}), 'lineprops', 'b--', 'transparent', 1);
+shadedErrorBar((1:size(trueTrials{1, 3}, 2))./fs, nanmean(trueTrials{1, 3})-nanmean(trueTrials{1, 3}(:,1)), nansem(trueTrials{1, 3}), 'lineprops', 'r--', 'transparent', 1);
+shadedErrorBar((1:size(trueTrials{1, 4}, 2))./fs, nanmean(trueTrials{1, 4})-nanmean(trueTrials{1, 4}(:,1)), nansem(trueTrials{1, 4}), 'lineprops', 'r', 'transparent', 1);
+ylim([-0.05 0.3])
+
+subplot(1,2,2); hold on;
+shadedErrorBar((1:size(subTrials{1, 1}, 2))./fs, nanmean(subTrials{1, 1})-nanmean(subTrials{1, 1}(:,1)), nansem(subTrials{1, 1}), 'lineprops', 'b', 'transparent', 1);
+shadedErrorBar((1:size(subTrials{1, 2}, 2))./fs, nanmean(subTrials{1, 2})-nanmean(subTrials{1, 2}(:,1)), nansem(subTrials{1, 2}), 'lineprops', 'b--', 'transparent', 1);
+shadedErrorBar((1:size(subTrials{1, 3}, 2))./fs, nanmean(subTrials{1, 3})-nanmean(subTrials{1, 3}(:,1)), nansem(subTrials{1, 3}), 'lineprops', 'r--', 'transparent', 1);
+shadedErrorBar((1:size(subTrials{1, 4}, 2))./fs, nanmean(subTrials{1, 4})-nanmean(subTrials{1, 4}(:,1)), nansem(subTrials{1, 4}), 'lineprops', 'r', 'transparent', 1);
+ylim([-0.05 0.2])
 
 
 
