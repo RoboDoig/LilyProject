@@ -32,7 +32,19 @@ allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSizes);
 % deviance explained
 devs = cellfun(@(x) x.fit.dev(end), allSessions);
 cr = cellfun(@(x) x.sessionStruct.correctRate, allSessions);
-figure; subplot(1,2,1); plot(devs); subplot(1,2,2); scatter(cr, devs);
+lickRate = cellfun(@(x) sum(x.lickVec) / length(x.lickVec), allSessions);
+sessionLength = cellfun(@(x) length(x.lickVec), allSessions);
+sessionVariance = cellfun(@(x) var(x.trueY), allSessions);
+alignVarianceX = cellfun(@(x) var(x.sessionStruct.alignInfoX), allSessions);
+alignVarianceY = cellfun(@(x) var(x.sessionStruct.alignInfoY), allSessions);
+figure('Renderer', 'painters', 'Position', [100 100 1200 200]); 
+subplot(1,7,1); plot(devs, 'k'); xlabel('Sesssion'); ylabel('% Dev')
+subplot(1,7,2); scatter(cr, devs, 'k'); [r, p] = corrcoef(cr, devs); title([num2str(r(1, 2)), ',', num2str(p(1, 2))]); xlabel('Correct Rate')
+subplot(1,7,3); scatter(lickRate, devs, 'k'); [r, p] = corrcoef(lickRate, devs); title([num2str(r(1, 2)), ',', num2str(p(1, 2))]); xlabel('Lick Rate')
+subplot(1,7,4); scatter(sessionLength, devs, 'k'); [r, p] = corrcoef(sessionLength, devs); title([num2str(r(1, 2)), ',', num2str(p(1, 2))]); xlabel('Session Length')
+subplot(1,7,5); scatter(sessionVariance, devs, 'k'); [r, p] = corrcoef(sessionVariance, devs); title([num2str(r(1, 2)), ',', num2str(p(1, 2))]); xlabel('Session Var')
+subplot(1,7,6); scatter(alignVarianceX, devs, 'k'); [r, p] = corrcoef(alignVarianceX, devs); title([num2str(r(1, 2)), ',', num2str(p(1, 2))]); xlabel('alignX Var')
+subplot(1,7,7); scatter(alignVarianceY, devs, 'k'); [r, p] = corrcoef(alignVarianceY, devs); title([num2str(r(1, 2)), ',', num2str(p(1, 2))]); xlabel('alignY Var')
 
 % show reconstructed for best fit
 [m, I] = max(devs);

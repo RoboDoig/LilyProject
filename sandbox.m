@@ -1,53 +1,86 @@
 clear all; close all; clc;
 
-data = load('AH1024_datastruct.mat');
-data = data.summary;
+%% params
+% fname = 'AH1024_datastruct';
+% fname = 'AH1100_datastruct';
+% fname = 'AH1107_datastruct';
+% fname = 'AH1147_datastruct';
+% fname = 'AH1149_datastruct';
+
+% % fname = 'AH1110_datastruct';
+% % fname = 'AH1148_datastruct';
+% % fname = 'AH1151_datastruct';
+
+data = load([fname, '.mat']);
 fs = 15.44;
+trialSkip = 30;
 
-% find highest performance trial
-correctRate = [data.CorrectRate];
-[m, maxIdx] = max(correctRate);
-session = maxIdx;
+inputNames = {'lickTimesVec', 'alignInfoX', 'alignInfoY'};
+nInputs = length(inputNames);
+windowSize = [30; 30; 30]; % window sizes for design matrix
 
-% for that session get useful variables
-dff = dffFromTrace(data(session).c2FOVrigid);
-trialStart = data(session).trialStart;
-trialEnd = data(session).trialEnd;
-nTrials = length(trialStart);
-trialMatrix = data(session).trialMatrix;
-lickTimes = data(session).licks;
-waterTime = data(session).waterTime;
+allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSize);
+nSessions = length(allSessions);
 
-figure; hold on;
-plot(dff, 'k');
-scatter(trialStart, ones(1,length(trialStart)), 'r.');
-
-% split into trials
-trialAligned = splitToTrials(dff', trialStart, trialEnd);
-
-% parse trialMatrix (hit, miss, fa, cr)
-trialOutcome = parseTrialMatrix(trialMatrix);
-
-% cut out initial trials
-trialAligned = trialAligned(30:end, :);
-trialOutcome = trialOutcome(30:end);
-lickTimes = lickTimes(30:end);
-
-% show licks + response
-figure; hold on;
-imagesc(trialAligned);
-
-for i = 1:size(lickTimes, 1)
-    lickFrames = lickTimes{i}*fs;
-    scatter(lickFrames, repmat(i, 1, length(lickFrames)), 'b.');
+% response functions per session
+figure;
+for i = 1:nSessions
+    for j = 1:nInputs
+       subplot(1, nInputs, j); hold on;
+       plot(allSessions{i}.responseFunctions{j}, 'Color', [i/nSessions, 0, 0]);
+    end
 end
 
-% show responses for each trial type;
-figure;
-subplot(2,2,1); imagesc(trialAligned(trialOutcome==1, :)); title('HIT');
-subplot(2,2,2); imagesc(trialAligned(trialOutcome==2, :)); title('MISS');
-subplot(2,2,3); imagesc(trialAligned(trialOutcome==4, :)); title('CR');
-subplot(2,2,4); imagesc(trialAligned(trialOutcome==3, :)); title('FA');
+% trial alignment
+analysisWindow = 20:50;
+allMeanTraceAligned = [];
+allMeanTraceHit = [];
+allMeanTraceFa = [];
 
+allMeanLickAligned = [];
+allMeanLickHit = [];
+allMeanLickFa = [];
+for i = 1:nSessions
+    fullTraceLength = length(allSessions{i}.sessionStruct.dff);
+    trueTrace = [nan(fullTraceLength - length(allSessions{i}.trueY), 1); allSessions{i}.trueY]';
+    trueLicks = [nan(fullTraceLength - length(allSessions{i}.lickVec), 1); allSessions{i}.lickVec']';
+    
+    traceAligned = splitToTrials(trueTrace, floor(allSessions{i}.sessionStruct.trialStart.*fs), floor(allSessions{i}.sessionStruct.trialEnd.*fs));
+    traceAligned = traceAligned(:, analysisWindow);
+    lickAligned = splitToTrials(trueLicks, floor(allSessions{i}.sessionStruct.trialStart.*fs), floor(allSessions{i}.sessionStruct.trialEnd.*fs));
+    lickAligned = lickAligned(:, analysisWindow);
+    
+    trialOutcome = parseTrialMatrix(allSessions{i}.sessionStruct.trialMatrix);
+    hitIndex = find(trialOutcome==1);
+    missIndex = find(trialOutcome==2);
+    faIndex = find(trialOutcome==3);
+    crIndex = find(trialOutcome==4);
+    
+    hitTraceAligned = traceAligned(hitIndex, :);
+    faTraceAligned = traceAligned(faIndex, :);
+    hitLickAligned = lickAligned(hitIndex, :);
+    faLickAligned = lickAligned(faIndex, :);
 
+    figure; hold on;
+    scatter(mean(hitLickAligned, 2), mean(hitTraceAligned, 2), 'g');
+    scatter(mean(faLickAligned, 2), mean(faTraceAligned, 2), 'r');
+    [r, p] = corrcoef(mean(lickAligned, 2), mean(traceAligned, 2));
+    title([num2str(r(1, 2)), ', ' num2str(p(1, 2))]);
+    
+    allMeanTraceAligned = [allMeanTraceAligned, mean(traceAligned, 2)'];
+    allMeanTraceHit = [allMeanTraceHit, mean(hitTraceAligned, 2)'];
+    allMeanTraceFa = [allMeanTraceFa, mean(faTraceAligned, 2)'];
+    
+    allMeanLickAligned = [allMeanLickAligned, mean(lickAligned, 2)'];
+    allMeanLickHit = [allMeanLickHit, mean(hitLickAligned, 2)'];
+    allMeanLickFa = [allMeanLickFa, mean(faLickAligned, 2)'];
+end
 
+figure; hold on;
+scatter(allMeanLickHit+randn(1,length(allMeanLickHit))*0.005, allMeanTraceHit, 'g');
+scatter(allMeanLickFa+randn(1,length(allMeanLickFa))*0.005, allMeanTraceFa, 'r');
+[r, p] = corrcoef(allMeanLickAligned, allMeanTraceAligned);
+title(['R^2: ' num2str(r(1, 2)) ' p: ' num2str(p(1, 2))]);
+xlabel('Lick Rate / Frame');
+ylabel('dF/F Integral')
+% scatter(allMeanLickAligned+randn(1,length(allMeanLickAligned))*0.005, allMeanTraceAligned);

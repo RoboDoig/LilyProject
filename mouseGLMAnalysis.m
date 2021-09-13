@@ -25,6 +25,9 @@ function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windo
         trueY = y(startFrame:endFrame);
         yHat = yHat(:, end);
         lickVec = sessionStruct.lickTimesVec(startFrame:endFrame);
+        poleOnsetVec = sessionStruct.poleOnsetVec(startFrame:endFrame);
+        poleDownVec = sessionStruct.poleDownVec(startFrame:endFrame);
+        waterTimesVec = sessionStruct.waterTimesVec(startFrame:endFrame);
         t = sessionStruct.tAxis(startFrame:endFrame);
 
         % extract response functions
@@ -46,6 +49,9 @@ function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windo
         fitData.trueY = trueY;
         fitData.yHat = yHat;
         fitData.lickVec = lickVec;
+        fitData.poleOnsetVec = poleOnsetVec;
+        fitData.poleDownVec = poleDownVec;
+        fitData.waterTimesVec = waterTimesVec;
         fitData.t = t;
         fitData.responseFunctions = responseFunctions;
         allSessions{sessionIdx} = fitData;

@@ -5,12 +5,20 @@ fnames = {'AH1024_datastruct', 'AH1100_datastruct', 'AH1107_datastruct', 'AH1147
 fs = 15.44;
 trialSkip = 30;
 
+% inputNames = {'lickTimesVec', 'poleOnsetVec', 'poleDownVec', 'alignInfoX', 'alignInfoY', 'waterTimesVec'};
+% windowSizes = [floor(5 * fs);...
+%                floor(1 * fs);...
+%                floor(1 * fs);...
+%                floor(1 * fs);...
+%                floor(1 * fs);...
+%                floor(5 * fs);];
+
 inputNames = {'lickTimesVec', 'poleOnsetVec', 'poleDownVec', 'alignInfoX', 'alignInfoY', 'waterTimesVec'};
 windowSizes = [floor(5 * fs);...
                floor(1 * fs);...
                floor(1 * fs);...
-               floor(1 * fs);...
-               floor(1 * fs);...
+               floor(0.1 * fs);...
+               floor(0.1 * fs);...
                floor(5 * fs);];
 
 %% leave one out
@@ -20,7 +28,7 @@ for i = 1:length(fnames)
    
    % full model
    allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSizes);
-   meanDevs = max(cellfun(@(x) x.fit.dev(end), allSessions));
+   meanDevs = mean(cellfun(@(x) x.fit.dev(end), allSessions));
    devExplained(i, end) = meanDevs;
    
    % drop model
@@ -30,7 +38,7 @@ for i = 1:length(fnames)
       windows = windowSizes(remainIdx, :);
       
       allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputs, windows);
-      meanDevs = max(cellfun(@(x) x.fit.dev(end), allSessions));
+      meanDevs = mean(cellfun(@(x) x.fit.dev(end), allSessions));
       devExplained(i, j) = meanDevs;
    end
 end
@@ -40,5 +48,5 @@ figure; hold on;
 bar(nanmean(devExplained), 'k')
 errorbar(1:length(inputNames)+1, nanmean(devExplained), nanstd(devExplained)./sqrt(length(fnames)), 'k.');
 modelNames = inputNames; modelNames{end+1} = 'fullModel';
-xticks(1:7)
+xticks(1:length(modelNames))
 xticklabels(modelNames); xtickangle(45)
