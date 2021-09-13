@@ -2,7 +2,7 @@ clear all; close all; clc;
 
 %% params
 % fname = 'AH1024_datastruct';
-% fname = 'AH1100_datastruct';
+fname = 'AH1100_datastruct';
 % fname = 'AH1107_datastruct';
 % fname = 'AH1147_datastruct';
 % fname = 'AH1149_datastruct';
@@ -16,7 +16,7 @@ hasFA = arrayfun(@(x) sum(x.trialMatrix(:, 3)), data.summary);
 goodSessionIndex = find([data.summary.hasWhisker] == 1 & [data.summary.hasScopolamine] == 0 & [data.summary.polePresent] == 1 & hasFA>0);
 earlySessionIndex = goodSessionIndex(1:3);
 lateSessionIndex = goodSessionIndex(end-2:end);
-fs = 15.44;
+fs = [15.44, 311]; % 2p fs, whisker fs
 trialSkip = 30;
 
 inputNames = {'lickTimesVec', 'alignInfoX', 'alignInfoY', 'poleDownVec'};

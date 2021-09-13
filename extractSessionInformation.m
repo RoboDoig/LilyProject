@@ -1,12 +1,14 @@
 function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trialSkip, verbose)
 
     sessionStruct = struct();
+    pfs = fs(1); % 2p fs
+    wFs = fs(2); % whisker fs
 
     dff = dffFromTrace(data(sessionIdx).c2FOVrigid);
-    tAxis = (1:length(dff))./fs;
+    tAxis = (1:length(dff))./pfs;
     
-    trialStart = data(sessionIdx).trialStart(trialSkip:end)./fs;
-    trialEnd = data(sessionIdx).trialEnd(trialSkip:end)./fs;
+    trialStart = data(sessionIdx).trialStart(trialSkip:end)./pfs;
+    trialEnd = data(sessionIdx).trialEnd(trialSkip:end)./pfs;
     poleOnsetRelative = data(sessionIdx).poleOnset(trialSkip:end);
     poleDownRelative = data(sessionIdx).poleDown(trialSkip:end);
     
@@ -16,7 +18,7 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     alignInfoY = data(sessionIdx).alignInfo(:, 2);
     lickTimesRelative = data(sessionIdx).licks(trialSkip:end, :);
     waterTimesRelative = data(sessionIdx).waterTime(trialSkip: end);
-    skipStartFrame = floor(trialStart(1)*fs);
+    skipStartFrame = floor(trialStart(1)*pfs);
     
     % get absolute times
     lickTimes = [];
