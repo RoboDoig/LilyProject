@@ -13,18 +13,27 @@ fname = 'AH1100_datastruct';
 
 data = load([fname, '.mat']);
 hasFA = arrayfun(@(x) sum(x.trialMatrix(:, 3)), data.summary);
-goodSessionIndex = find([data.summary.hasWhisker] == 1 & [data.summary.hasScopolamine] == 0 & [data.summary.polePresent] == 1 & hasFA>0);
+hasWhisker = arrayfun(@(x) length(x.theta) > 0, data.summary);
+goodSessionIndex = find([data.summary.hasWhisker] == 1 & [data.summary.hasScopolamine] == 0 & [data.summary.polePresent] == 1 & hasFA>0 & hasWhisker>0);
 earlySessionIndex = goodSessionIndex(1:3);
 lateSessionIndex = goodSessionIndex(end-2:end);
+data.summary = data.summary([earlySessionIndex, lateSessionIndex]);
 fs = [15.44, 311]; % 2p fs, whisker fs
 trialSkip = 30;
 
-inputNames = {'lickTimesVec', 'alignInfoX', 'alignInfoY', 'poleDownVec'};
+% inputNames = {'lickTimesVec', 'poleOnsetVec', 'poleDownVec', 'thetaVec'};
+inputNames = {'lickTimesVec'};
 nInputs = length(inputNames);
-windowSize = [30; 30; 30; 30]; % window sizes for design matrix
+windowSize = [30]; % window sizes for design matrix
 
 allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSize);
 nSessions = length(allSessions);
+
+%% reset figures
+close all;
+earlySessionIndex = 1:3;
+lateSessionIndex = 4:6;
+fs = fs(1);
 
 %% response functions per session
 figure;

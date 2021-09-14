@@ -20,16 +20,31 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     waterTimesRelative = data(sessionIdx).waterTime(trialSkip: end);
     skipStartFrame = floor(trialStart(1)*pfs);
     
+    thetaTrials = data(sessionIdx).theta(trialSkip:end);
+    amplitudeTrials = data(sessionIdx).amplitude(trialSkip:end);
+    setpointTrials = data(sessionIdx).setpoint(trialSkip:end);
+    phaseTrials = data(sessionIdx).phase(trialSkip:end);
+    
     % get absolute times
     lickTimes = [];
     waterTimes = [];
     poleOnset = [];
     poleDown = [];
+    wtAxis = [];
+    theta = [];
+    amplitude = [];
+    setpoint = [];
+    phase = [];
     for i = 1:length(trialStart)
         lickTimes = [lickTimes, lickTimesRelative{i}'+trialStart(i)];
         waterTimes = [waterTimes, waterTimesRelative{i}'+trialStart(i)];
         poleOnset = [poleOnset, poleOnsetRelative{i}+trialStart(i)];
         poleDown = [poleDown, poleDownRelative{i}+trialStart(i)];
+        wtAxis = [wtAxis, ((1:length(thetaTrials{i}))./wFs)+trialStart(i)];
+        theta = [theta, thetaTrials{i}];
+        amplitude = [amplitude, amplitudeTrials{i}];
+        setpoint = [setpoint setpointTrials{i}];
+        phase = [phase phaseTrials{i}];
     end
 
     % vectorize times
@@ -53,6 +68,22 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
         
         vecPoint = find(tAxis>=poleDown(i), 1);
         poleDownVec(vecPoint) = 1;
+    end
+    
+    % we're downsampling whisker data here to align to imaging, should be
+    % the other way round! TODO
+    thetaVec = zeros(1, length(dff));
+    amplitudeVec = zeros(1, length(dff));
+    setpointVec = zeros(1, length(dff));
+    phaseVec = zeros(1, length(dff));
+    for i = 1:length(dff)
+        tPoint = find(tAxis(i)<=wtAxis, 1);
+        if ~isempty(tPoint)
+            thetaVec(i) = theta(tPoint);
+            amplitudeVec(i) = amplitude(tPoint);
+            setpointVec(i) = setpoint(tPoint);
+            phaseVec(i) = phase(tPoint);
+        end
     end
     
     % save to output struct
@@ -81,6 +112,11 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     sessionStruct.poleOnsetVec = poleOnsetVec;
     sessionStruct.poleDownVec = poleDownVec;
     
+    sessionStruct.thetaVec = thetaVec;
+    sessionStruct.amplitudeVec = amplitudeVec;
+    sessionStruct.setpointVec = setpointVec;
+    sessionStruct.phaseVec = phaseVec;
+    
     sessionStruct.correctRate = data(sessionIdx).CorrectRate;
     
     if verbose
@@ -90,8 +126,10 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
         plot(tAxis, lickTimesVec, 'b');
         plot(tAxis, poleOnsetVec, 'g');
         plot(tAxis, waterTimesVec-1, 'y');
+        plot(tAxis, thetaVec./100, 'm');
         plot([tAxis(skipStartFrame) tAxis(skipStartFrame)], [0, 1], 'g--')
         scatter(trialStart, ones(1,length(trialStart)), 'r.');
+        scatter(trialEnd, ones(1,length(trialEnd)), 'ro');
         scatter(lickTimes, ones(1,length(lickTimes)), 'b.');
         scatter(poleOnset, ones(1,length(poleOnset)), 'g.');
     end
