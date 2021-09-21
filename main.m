@@ -22,7 +22,7 @@ fs = [15.44, 311]; % 2p fs, whisker fs
 trialSkip = 30;
 
 % inputNames = {'lickTimesVec', 'poleOnsetVec', 'poleDownVec', 'thetaVec'};
-inputNames = {'lickTimesVec'};
+inputNames = {'amplitudeVec'};
 nInputs = length(inputNames);
 windowSize = [30]; % window sizes for design matrix
 
