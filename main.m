@@ -1,17 +1,23 @@
 clear all; close all; clc;
 
 %% params
-% fname = 'AH1024_datastruct';
-fname = 'AH1100_datastruct';
+% fname = 'AH1100_datastruct';
 % fname = 'AH1107_datastruct';
 % fname = 'AH1147_datastruct';
 % fname = 'AH1149_datastruct';
+fname = 'AH1151_datastruct';
 
-% % fname = 'AH1110_datastruct';
-% % fname = 'AH1148_datastruct';
-% % fname = 'AH1151_datastruct';
+% fname = 'AH1024_datastruct';
+% fname = 'AH1110_datastruct';
+% fname = 'AH1148_datastruct';
+
 
 data = load([fname, '.mat']);
+
+% normalize any fields that might be large
+data = normalizeData01(data, 'amplitude');
+data = normalizeData01(data, 'theta');
+
 hasFA = arrayfun(@(x) sum(x.trialMatrix(:, 3)), data.summary);
 hasWhisker = arrayfun(@(x) length(x.theta) > 0, data.summary);
 goodSessionIndex = find([data.summary.hasWhisker] == 1 & [data.summary.hasScopolamine] == 0 & [data.summary.polePresent] == 1 & hasFA>0 & hasWhisker>0);
@@ -21,10 +27,11 @@ data.summary = data.summary([earlySessionIndex, lateSessionIndex]);
 fs = [15.44, 311]; % 2p fs, whisker fs
 trialSkip = 30;
 
-% inputNames = {'lickTimesVec', 'poleOnsetVec', 'poleDownVec', 'thetaVec'};
-inputNames = {'amplitudeVec'};
+inputNames = {'lickTimesVec', 'poleOnsetVec', 'poleDownVec', 'amplitudeVec'};
+% inputNames = {'amplitudeVec'};
 nInputs = length(inputNames);
-windowSize = [30]; % window sizes for design matrix
+windowSize = [30; 30; 30; 30]; % window sizes for design matrix
+% windowSize = [30];
 
 allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSize);
 nSessions = length(allSessions);
