@@ -8,7 +8,7 @@ function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windo
         fitData = struct();
 
         % extract session variables
-        sessionStruct = extractSessionInformation(data.summary, sessionIdx, fs, trialSkip, 0);
+        sessionStruct = extractSessionInformation(data.summary, sessionIdx, fs, trialSkip, 1);
 
         % GLM
         inputVectors = [];
