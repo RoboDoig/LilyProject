@@ -28,12 +28,12 @@ data.summary = data.summary([earlySessionIndex, lateSessionIndex]);
 fs = [15.44, 311]; % 2p fs, whisker fs
 trialSkip = 30;
 
-inputNames = {'firstLickTimesVec', 'otherLickTimesVec', 'poleOnsetVec', 'poleDownVec'};
+inputNames = {'firstLickTimesVec', 'otherLickTimesVec', 'poleOnsetVec', 'poleDownVec', 'waterTimesVec', 'amplitudeVec', 'dff'};
 nInputs = length(inputNames);
-% windowSize = [30; 30; 30; 30; 30; 30]; % window sizes for design matrix
-windowSize = [30; 30; 30; 30; 30]; % window sizes for design matrix
+windowSizes = [45; 45; 45; 45; 45; 45; 5]; % window sizes for design matrix
+timeLags =  [0; 0; 0; 0; 0; 0; -10]; % time lags for each window
 
-allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSize);
+allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSizes, timeLags);
 nSessions = length(allSessions);
 
 %% reset figures

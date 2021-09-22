@@ -54,9 +54,11 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
         trialLicks = lickTimes(lickTimes >= trialStart(i) & lickTimes <= trialEnd(i));
         if ~isempty(trialLicks)
             firstLickTimes = [firstLickTimes, trialLicks(1)];
-            otherLickTimes = [otherLickTimes, trialLicks(2:end)];
+%             otherLickTimes = [otherLickTimes, trialLicks(2:end)];
         end
     end
+    
+    otherLickTimes = setdiff(lickTimes, firstLickTimes);
 
     % vectorize times
     lickTimesVec = zeros(1, length(dff));
@@ -110,7 +112,7 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     end
     
     % save to output struct
-    sessionStruct.dff = dff;
+    sessionStruct.dff = dff';
     sessionStruct.tAxis = tAxis;
     sessionStruct.trialStart = trialStart;
     sessionStruct.trialEnd = trialEnd;
@@ -150,7 +152,8 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
         % plot timings
         figure; hold on;
         plot(tAxis, dff, 'k');
-        plot(tAxis, lickTimesVec, 'b');
+        plot(tAxis, firstLickTimesVec, 'b');
+        plot(tAxis, otherLickTimesVec, 'm');
         plot(tAxis, poleOnsetVec, 'g');
         plot(tAxis, waterTimesVec-1, 'y');
         plot(tAxis, thetaVec./100, 'm');

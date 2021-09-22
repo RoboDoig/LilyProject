@@ -1,4 +1,4 @@
-function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSizes)
+function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSizes, timeLags)
     
     nSessions = size(data.summary, 2);
     % fit models for each session
@@ -16,19 +16,30 @@ function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windo
            inputVectors = [inputVectors; sessionStruct.(inputNames{i})]; 
         end
 
-        responseVector = sessionStruct.dff; % response vector;
+        responseVector = sessionStruct.dff'; % response vector;
+        % continuous frame period
         startFrame = sessionStruct.skipStartFrame;
-        endFrame = length(responseVector);
+        endFrame = length(responseVector) - max(timeLags);
+        framePeriod = startFrame : endFrame;
+        
+%         % trial frame period
+%         trialFrames = [];
+%         for i = 1:length(sessionStruct.trialStart)
+%             trialStart = sessionStruct.trialStart(i);
+%             startFrame = find(sessionStruct.tAxis > trialStart, 1);
+%             trialFrames = [trialFrames startFrame:(startFrame+90)];
+%         end
+%         framePeriod = trialFrames;
 
-        [fit, fullDesignMatrix, y, yHat] = buildGLM(inputVectors, windowSizes, responseVector, startFrame, endFrame, 0);
+        [fit, fullDesignMatrix, y, yHat] = buildGLM(inputVectors, windowSizes, timeLags, responseVector, framePeriod, 1);
 
-        trueY = y(startFrame:endFrame);
+        trueY = y(framePeriod);
         yHat = yHat(:, end);
-        lickVec = sessionStruct.lickTimesVec(startFrame:endFrame);
-        poleOnsetVec = sessionStruct.poleOnsetVec(startFrame:endFrame);
-        poleDownVec = sessionStruct.poleDownVec(startFrame:endFrame);
-        waterTimesVec = sessionStruct.waterTimesVec(startFrame:endFrame);
-        t = sessionStruct.tAxis(startFrame:endFrame);
+        lickVec = sessionStruct.lickTimesVec(framePeriod);
+        poleOnsetVec = sessionStruct.poleOnsetVec(framePeriod);
+        poleDownVec = sessionStruct.poleDownVec(framePeriod);
+        waterTimesVec = sessionStruct.waterTimesVec(framePeriod);
+        t = sessionStruct.tAxis(framePeriod);
 
         % extract response functions
         cT = [0 cumsum(windowSizes)'];
@@ -42,8 +53,7 @@ function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windo
         fitData.sessionStruct = sessionStruct;
         fitData.windowSizes = windowSizes;
         fitData.responseVector = sessionStruct.dff;
-        fitData.startFrame = startFrame;
-        fitData.endFrame = endFrame;
+        fitData.framePeriod = framePeriod;
         fitData.fit = fit;
         fitData.X = fullDesignMatrix;
         fitData.trueY = trueY;
