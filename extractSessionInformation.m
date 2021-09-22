@@ -46,9 +46,22 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
         setpoint = [setpoint setpointTrials{i}];
         phase = [phase phaseTrials{i}];
     end
+    
+    % split to first lick and other lick times
+    firstLickTimes = [];
+    otherLickTimes = [];
+    for i = 1:length(trialStart)
+        trialLicks = lickTimes(lickTimes >= trialStart(i) & lickTimes <= trialEnd(i));
+        if ~isempty(trialLicks)
+            firstLickTimes = [firstLickTimes, trialLicks(1)];
+            otherLickTimes = [otherLickTimes, trialLicks(2:end)];
+        end
+    end
 
     % vectorize times
     lickTimesVec = zeros(1, length(dff));
+    firstLickTimesVec = zeros(1, length(dff));
+    otherLickTimesVec = zeros(1, length(dff));
     waterTimesVec = zeros(1, length(dff));
     for i = 1:length(lickTimes)
         vecPoint = find(tAxis>=lickTimes(i), 1);
@@ -58,6 +71,16 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     for i = 1:length(waterTimes)
         vecPoint = find(tAxis>=waterTimes(i), 1);
         waterTimesVec(vecPoint) = 1;
+    end
+    
+    for i = 1:length(firstLickTimes)
+        vecPoint = find(tAxis>=firstLickTimes(i), 1);
+        firstLickTimesVec(vecPoint) = 1;
+    end
+    
+    for i = 1:length(otherLickTimes)
+        vecPoint = find(tAxis>=otherLickTimes(i), 1);
+        otherLickTimesVec(vecPoint) = 1;
     end
     
     poleOnsetVec = zeros(1, length(dff));
@@ -103,11 +126,15 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     sessionStruct.skipStartFrame = skipStartFrame;
     
     sessionStruct.lickTimes = lickTimes;
+    sessionStruct.firstLickTimes = firstLickTimes;
+    sessionStruct.otherLickTimes = otherLickTimes;
     sessionStruct.waterTimes = waterTimes;
     sessionStruct.poleOnset = poleOnset;
     sessionStruct.poleDown = poleDown;
     
     sessionStruct.lickTimesVec = lickTimesVec;
+    sessionStruct.firstLickTimesVec = firstLickTimesVec;
+    sessionStruct.otherLickTimesVec = otherLickTimesVec;
     sessionStruct.waterTimesVec = waterTimesVec;
     sessionStruct.poleOnsetVec = poleOnsetVec;
     sessionStruct.poleDownVec = poleDownVec;

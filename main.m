@@ -3,20 +3,21 @@ clear all; close all; clc;
 %% params
 % fname = 'AH1100_datastruct';
 % fname = 'AH1107_datastruct';
-% fname = 'AH1147_datastruct';
+fname = 'AH1147_datastruct';
 % fname = 'AH1149_datastruct';
-fname = 'AH1151_datastruct';
+% fname = 'AH1151_datastruct';
 
 % fname = 'AH1024_datastruct';
 % fname = 'AH1110_datastruct';
 % fname = 'AH1148_datastruct';
-
 
 data = load([fname, '.mat']);
 
 % normalize any fields that might be large
 data = normalizeData01(data, 'amplitude');
 data = normalizeData01(data, 'theta');
+data = normalizeData01(data, 'setpoint');
+data = normalizeData01(data, 'phase');
 
 hasFA = arrayfun(@(x) sum(x.trialMatrix(:, 3)), data.summary);
 hasWhisker = arrayfun(@(x) length(x.theta) > 0, data.summary);
@@ -27,11 +28,10 @@ data.summary = data.summary([earlySessionIndex, lateSessionIndex]);
 fs = [15.44, 311]; % 2p fs, whisker fs
 trialSkip = 30;
 
-inputNames = {'lickTimesVec', 'poleOnsetVec', 'poleDownVec', 'amplitudeVec'};
-% inputNames = {'amplitudeVec'};
+inputNames = {'firstLickTimesVec', 'otherLickTimesVec', 'poleOnsetVec', 'poleDownVec'};
 nInputs = length(inputNames);
-windowSize = [30; 30; 30; 30]; % window sizes for design matrix
-% windowSize = [30];
+% windowSize = [30; 30; 30; 30; 30; 30]; % window sizes for design matrix
+windowSize = [30; 30; 30; 30; 30]; % window sizes for design matrix
 
 allSessions = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windowSize);
 nSessions = length(allSessions);
@@ -54,12 +54,16 @@ for i = 1:nSessions
 end
 
 %% example trace
+sI = 3;
 figure;
-subplot(2,1,1)
-plot(allSessions{lateSessionIndex(1)}.t, allSessions{lateSessionIndex(1)}.trueY, 'k');
+subplot(2,1,1); hold on;
+plot(allSessions{lateSessionIndex(sI)}.t, allSessions{lateSessionIndex(sI)}.trueY, 'k');
+plot(allSessions{lateSessionIndex(sI)}.t, allSessions{lateSessionIndex(sI)}.yHat, 'r');
+plot(allSessions{lateSessionIndex(sI)}.t, allSessions{lateSessionIndex(sI)}.lickVec, 'b');
 ylabel('dF/F');
-subplot(2,1,2)
-plot(allSessions{lateSessionIndex(1)}.t(6000:6150), allSessions{lateSessionIndex(1)}.trueY(6000:6150), 'k');
+subplot(2,1,2); hold on;
+plot(allSessions{lateSessionIndex(sI)}.t(6000:6150), allSessions{lateSessionIndex(sI)}.trueY(6000:6150), 'k');
+plot(allSessions{lateSessionIndex(sI)}.t(6000:6150), allSessions{lateSessionIndex(sI)}.yHat(6000:6150), 'r');
 xlabel('Time (s)'); ylabel('dF/F');
 
 %% trial alignment

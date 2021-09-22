@@ -17,7 +17,12 @@ function [fit, fullDesignMatrix, y, yHat] = buildGLM(inputVectors, windowSizes, 
     end
     
     % fit model
-    fit = glmnet(fullDesignMatrix, y(startFrame:endFrame));
+    options = glmnetSet;
+    options.alpha = 0;
+    options.standardize = 0;
+    options.nlambda = 50;
+%     options.intr = 0;
+    fit = glmnet(fullDesignMatrix, y(startFrame:endFrame), 'gaussian', options);
     yHat = glmnetPredict(fit, fullDesignMatrix);
     
     if verbose
