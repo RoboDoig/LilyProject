@@ -114,8 +114,8 @@ for j = 1:nInputs
     end
     
     subplot(1, nInputs, j); hold on;
-    shadedErrorBar(1:size(meanRkEarly, 2), mean(meanRkEarly), nansem(meanRkEarly), 'lineprops', 'k', 'transparent', 1);
-    shadedErrorBar(1:size(meanRkLate, 2), mean(meanRkLate), nansem(meanRkLate), 'lineprops', 'r', 'transparent', 1);
+    shadedErrorBar(1:size(meanRkEarly, 2), mean(meanRkEarly), nanstd(meanRkEarly), 'lineprops', 'k', 'transparent', 1);
+    shadedErrorBar(1:size(meanRkLate, 2), mean(meanRkLate), nanstd(meanRkLate), 'lineprops', 'r', 'transparent', 1);
     axis square
     title(inputNames{j});
 end
