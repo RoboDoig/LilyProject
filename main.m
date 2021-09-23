@@ -3,12 +3,12 @@ clear all; close all; clc;
 %% params
 % fname = 'AH1100_datastruct';
 % fname = 'AH1107_datastruct';
-fname = 'AH1147_datastruct';
+% fname = 'AH1147_datastruct';
 % fname = 'AH1149_datastruct';
 % fname = 'AH1151_datastruct';
 
 % fname = 'AH1024_datastruct';
-% fname = 'AH1110_datastruct';
+fname = 'AH1110_datastruct';
 % fname = 'AH1148_datastruct';
 
 data = load([fname, '.mat']);

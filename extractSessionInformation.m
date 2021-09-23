@@ -14,8 +14,13 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     
     nTrials = length(trialStart);
     trialMatrix = data(sessionIdx).trialMatrix(trialSkip:end, :);
-    alignInfoX = data(sessionIdx).alignInfo(:, 1);
-    alignInfoY = data(sessionIdx).alignInfo(:, 2);
+    if ~isempty(data(sessionIdx).alignInfo)
+        alignInfoX = data(sessionIdx).alignInfo(:, 1);
+        alignInfoY = data(sessionIdx).alignInfo(:, 2);
+    else
+        alignInfoX = nan(1, length(dff));
+        alignInfoY = nan(1, length(dff));
+    end
     lickTimesRelative = data(sessionIdx).licks(trialSkip:end, :);
     waterTimesRelative = data(sessionIdx).waterTime(trialSkip: end);
     skipStartFrame = floor(trialStart(1)*pfs);
