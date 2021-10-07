@@ -4,7 +4,7 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     pfs = fs(1); % 2p fs
     wFs = fs(2); % whisker fs
 
-    dff = dffFromTrace(data(sessionIdx).c2FOVrigid);
+    dff = dffFromTrace(data(sessionIdx).c2FOVraw);
     tAxis = (1:length(dff))./pfs;
     
     trialStart = data(sessionIdx).trialStart(trialSkip:end)./pfs;
@@ -29,6 +29,13 @@ function [sessionStruct] = extractSessionInformation(data, sessionIdx, fs, trial
     amplitudeTrials = data(sessionIdx).amplitude(trialSkip:end);
     setpointTrials = data(sessionIdx).setpoint(trialSkip:end);
     phaseTrials = data(sessionIdx).phase(trialSkip:end);
+    
+    % DEBUG
+    if length(trialStart) > length(lickTimesRelative)
+        trialStart = trialStart(1:end-1);
+        trialEnd = trialEnd(1:end-1);
+        nTrials = length(trialStart);
+    end
     
     % get absolute times
     lickTimes = [];

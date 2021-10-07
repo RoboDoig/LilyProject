@@ -22,15 +22,6 @@ function [allSessions] = mouseGLMAnalysis(data, fs, trialSkip, inputNames, windo
         endFrame = length(responseVector) - max(timeLags);
         framePeriod = startFrame : endFrame;
         
-%         % trial frame period
-%         trialFrames = [];
-%         for i = 1:length(sessionStruct.trialStart)
-%             trialStart = sessionStruct.trialStart(i);
-%             startFrame = find(sessionStruct.tAxis > trialStart, 1);
-%             trialFrames = [trialFrames startFrame:(startFrame+90)];
-%         end
-%         framePeriod = trialFrames;
-
         [fit, fullDesignMatrix, y, yHat] = buildGLM(inputVectors, windowSizes, timeLags, responseVector, framePeriod, 1);
 
         trueY = y(framePeriod);

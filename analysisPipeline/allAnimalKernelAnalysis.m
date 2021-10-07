@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% data set and params
-fnames = {'AH1100_datastruct', 'AH1107_datastruct', 'AH1147_datastruct', 'AH1149_datastruct', 'AH1151_datastruct'};
+fnames = {'AH1100_datastruct', 'AH1107_datastruct', 'AH1147_datastruct', 'AH1149_datastruct', 'AH1151_datastruct', 'AH1110_datastruct', 'AH1148_datastruct'};
 inputNames = {'firstLickTimesVec', 'otherLickTimesVec', 'poleOnsetVec', 'poleDownVec', 'waterTimesVec', 'amplitudeVec', 'dff'};
 nInputs = length(inputNames);
 windowSizes = [45; 45; 45; 45; 45; 45; 5]; % window sizes for design matrix
@@ -114,8 +114,8 @@ for j = 1:nInputs
     end
     
     subplot(1, nInputs, j); hold on;
-    shadedErrorBar(1:size(meanRkEarly, 2), mean(meanRkEarly), nanstd(meanRkEarly), 'lineprops', 'k', 'transparent', 1);
-    shadedErrorBar(1:size(meanRkLate, 2), mean(meanRkLate), nanstd(meanRkLate), 'lineprops', 'r', 'transparent', 1);
+    shadedErrorBar((1:size(meanRkEarly, 2))./fs, mean(meanRkEarly), nansem(meanRkEarly), 'lineprops', 'k', 'transparent', 1);
+    shadedErrorBar((1:size(meanRkLate, 2))./fs, mean(meanRkLate), nansem(meanRkLate), 'lineprops', 'r', 'transparent', 1);
     axis square
     title(inputNames{j});
 end
@@ -138,4 +138,27 @@ for j = 1:nInputs
     ylim([0 max(max(responses))*1.5]);
     axis square;
     title([inputNames{j} , ": ", num2str(p)]);
+end
+
+%% across animal analysis - GLM performance
+figure; hold on;
+for i = 1:6
+    modelDev = nan(1, nAnimals);
+    for j = 1:nAnimals
+        modelDev(j) = allAnimalSessions{j}{i}.fit.dev(end);
+    end
+    
+    bar(i, mean(modelDev), 'FaceColor', 'w');
+    errorbar(i, mean(modelDev), std(modelDev), 'k');
+end
+
+figure; hold on;
+for i = 1:6
+    modelDev = nan(1, nAnimals);
+    for j = 1:nAnimals
+        modelDev(j) = allAnimalSessions{j}{i}.fit.dev(end);
+    end
+    
+    bar(i, max(modelDev), 'FaceColor', 'w');
+%     errorbar(i, mean(modelDev), std(modelDev), 'k');
 end
