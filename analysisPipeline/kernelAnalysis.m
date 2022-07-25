@@ -2,7 +2,7 @@ clear all; close all; clc;
 
 %% load data, select animal, structure
 % fname = 'AH1100_datastruct';
-fname = 'AH1107_datastruct';
+% fname = 'AH1107_datastruct';
 % fname = 'AH1147_datastruct';
 % fname = 'AH1149_datastruct';
 % fname = 'AH1151_datastruct';
@@ -10,8 +10,10 @@ fname = 'AH1107_datastruct';
 % fname = 'AH1148_datastruct';
 
 % fname = 'AH1024_datastruct';
+% data = load([fname, '.mat']);
 
-data = load([fname, '.mat']);
+masterFile = ('MasterMouse.mat');
+data = masterFile.M(2);
 
 %% data preparation
 % normalize any fields that are particularly large

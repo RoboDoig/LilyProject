@@ -8,10 +8,13 @@ clear all; close all; clc;
 % fname = 'AH1151_datastruct';
 
 % fname = 'AH1024_datastruct';
-fname = 'AH1110_datastruct';
+% fname = 'AH1110_datastruct';
 % fname = 'AH1148_datastruct';
 
-data = load([fname, '.mat']);
+% data = load([fname, '.mat']);
+
+masterFile = load('MasterMouse.mat');
+data = masterFile.M(2);
 
 % normalize any fields that might be large
 data = normalizeData01(data, 'amplitude');
